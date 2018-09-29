@@ -9,7 +9,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.arrayContaining;
-
+//
 class Exercise1 {
 
     @Test
@@ -17,6 +17,9 @@ class Exercise1 {
         Person[] persons = getPersons();
 
         // TODO use Arrays.sort
+        Arrays.sort(persons, (p1, p2)->Integer.compare(p1.getAge(), p2.getAge()));
+
+
 
         assertThat(persons, is(arrayContaining(
                 new Person("Иван", "Мельников", 20),
@@ -45,6 +48,7 @@ class Exercise1 {
         Person[] persons = getPersons();
 
         // TODO use Arrays.sort
+
 
 
         assertThat(persons, is(arrayContaining(
