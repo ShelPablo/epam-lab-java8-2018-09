@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,15 +22,9 @@ class Exercise4 {
         private final List<T> list;
         private final Function<List<T>, List<R>> mapet;
 
-//        private LazyCollectionHelper(List<T> list, Function<T, R> mapping){
-//            this.list = list;
-//            this.A = null;
-//            //this.A = {listT -> ;//mapping ;
-//        }
-//
-        private  LazyCollectionHelper(List<T> list, Function<List<T>, List<R>> mapet){
+       private  LazyCollectionHelper(List<T> list, Function<List<T>, List<R>> mapet){
             this.list = list;
-            this.mapet = mapet;//mapping ;
+            this.mapet = mapet;
         }
 
         public static <T> LazyCollectionHelper<T, T> from(List<T> list) {
