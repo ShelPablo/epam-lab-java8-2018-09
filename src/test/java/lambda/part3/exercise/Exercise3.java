@@ -34,8 +34,7 @@ class Exercise3 {
 
         public List<R> force() {
             List<R> result = new ArrayList<>();
-            for (T item : list)
-                result.add(mapping.apply(item));
+            list.forEach(item ->result.add(mapping.apply(item)));
             return result;
         }
 
