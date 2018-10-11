@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -22,8 +23,14 @@ class Exercise1 {
     void findPersonsEverWorkedInEpam() {
         List<Employee> employees = getEmployees();
 
-        // TODO реализация, использовать Collectors.toList()
-        List<Person> personsEverWorkedInEpam = null;
+        //реализация, использовать Collectors.toList()
+        List<Person> personsEverWorkedInEpam = employees.stream()
+                .filter(e->e.getJobHistory()
+                        .stream()
+                        .map(JobHistoryEntry::getEmployer)
+                        .anyMatch("EPAM"::equals))
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
 
         assertThat(personsEverWorkedInEpam, contains(
                 employees.get(0).getPerson(),
