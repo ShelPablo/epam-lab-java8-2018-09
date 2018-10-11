@@ -51,7 +51,13 @@ class Exercise2 {
      * @see <a href="https://habr.com/company/epam_systems/blog/247805">Сканирование</a>
      */
     private static <T> T[] sequentialPrefix(T[] source, BinaryOperator<T> operator) {
-        throw new UnsupportedOperationException();
+        T[] result = source.clone();
+        T cumulT = source[0];
+        for (int i = 1; i < source.length; i++) {
+            cumulT = operator.apply(cumulT, source[i]);
+            result[i] = cumulT;
+        }
+        return result;
     }
 
     @Test
@@ -80,7 +86,13 @@ class Exercise2 {
      * @throws IllegalArgumentException Если {@code value <= 0}
      */
     private static int log2(int value) throws IllegalArgumentException {
-        throw new UnsupportedOperationException();
+        if (value<=0) throw new IllegalArgumentException();
+        int l2 = 30;
+        while ((value & (1 << 30))==0 ){
+            value = value << 1;
+            l2--;
+        }
+        return l2;
     }
 
     @Test
@@ -111,6 +123,7 @@ class Exercise2 {
      * @throws IllegalArgumentException Если {@code base < 0} или {@code degree < 0}
      */
     private static int pow(int base, int degree) throws IllegalArgumentException {
-        throw new UnsupportedOperationException();
+        if(base<0 || degree <0) throw  new IllegalArgumentException();
+        return (int)Math.pow(base, degree);
     }
 }
