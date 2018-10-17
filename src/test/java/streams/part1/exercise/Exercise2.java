@@ -1,5 +1,6 @@
 package streams.part1.exercise;
 
+import com.google.common.collect.Iterables;
 import lambda.data.Employee;
 import lambda.data.JobHistoryEntry;
 import lambda.data.Person;
@@ -8,7 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -19,7 +23,10 @@ class Exercise2 {
     void calcAverageAgeOfEmployees() {
         List<Employee> employees = getEmployees();
 
-        Double expected = null;
+        Double expected = employees.stream()
+                .map(Employee::getPerson)
+                .mapToDouble(Person::getAge)
+                .average().orElse(Double.NaN);
 
         assertThat(expected, Matchers.closeTo(33.66, 0.1));
     }
@@ -28,7 +35,10 @@ class Exercise2 {
     void findPersonWithLongestFullName() {
         List<Employee> employees = getEmployees();
 
-        Person expected = null;
+        Person expected = employees.stream()
+                .map(Employee::getPerson)
+                .max(Comparator.comparing(p->p.getFullName().length()))
+                .orElse(null);
 
         assertThat(expected, Matchers.is(employees.get(1).getPerson()));
     }
@@ -37,7 +47,13 @@ class Exercise2 {
     void findEmployeeWithMaximumDurationAtOnePosition() {
         List<Employee> employees = getEmployees();
 
-        Employee expected = null;
+        Function<Employee, Integer> getMaxDuration = e->e.getJobHistory().stream()
+                .map(JobHistoryEntry::getDuration)
+                .max(Integer::compare)
+                .orElse(0);
+        Employee expected = employees.stream()
+                .max(Comparator.comparing(getMaxDuration))
+                .orElse(null);
 
         assertThat(expected, Matchers.is(employees.get(4)));
     }
@@ -51,7 +67,12 @@ class Exercise2 {
     void calcTotalSalaryWithCoefficientWorkExperience() {
         List<Employee> employees = getEmployees();
 
-        Double expected = null;
+        ToDoubleFunction<Employee> getCurrentSalary = e->
+                 Iterables.getLast(e.getJobHistory()).getDuration() >3 ? 75_000*1.2 : 75_000;
+
+        Double expected = employees.stream()
+                .mapToDouble(getCurrentSalary)
+                .sum();
 
         assertThat(expected, Matchers.closeTo(465000.0, 0.001));
     }
