@@ -3,14 +3,15 @@ package streams.part2.exercise;
 import lambda.data.Employee;
 import lambda.data.JobHistoryEntry;
 import lambda.data.Person;
+import lombok.Data;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Map.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -76,7 +77,52 @@ class Exercise2 {
     void employersStuffList() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
+/*        @Data
+        class JobPersonPair implements Map.Entry<String, Person>
+        {
+            public JobPersonPair(String employer, Person person) {
+                this.employer = employer;
+                this.person = person;
+            }
+
+            String employer;
+            Person person;
+            @Override
+            public String getKey() {
+                return employer;
+            }
+            @Override
+            public Person getValue() {
+                return person;
+            }
+            @Override
+            public Person setValue(Person person) {
+                return this.person = person;
+            }
+        }
+
+        Function<Employee, Stream<JobPersonPair>> getJobEmploeePairList = e->{
+                List<JobPersonPair> list = new ArrayList<>();
+                e.getJobHistory().forEach(job->list.add(new JobPersonPair(job.getEmployer(), e.getPerson())));
+                return list.stream();
+        };
+
+        Map<String, Set<Person>> result = employees.stream()
+                        .flatMap(e->getJobEmploeePairList.apply(e))
+                        .collect(Collectors.groupingBy(pair->pair.getEmployer(), Collectors.mapping(JobPersonPair::getPerson, Collectors.toSet()) ));
+*/
+
+        Function<Employee, Stream<Map.Entry<String, Person>>> getJobEmploeePairList = e->{
+                Map<String, Person> list = new HashMap<>();
+                e.getJobHistory().forEach(job->list.put(job.getEmployer(), e.getPerson()));
+                return list.entrySet().stream();
+        };
+
+        Map<String, Set<Person>> result = employees.stream()
+                        .flatMap(getJobEmploeePairList::apply)
+                        .collect(Collectors.groupingBy(Entry::getKey, Collectors.mapping(Entry::getValue, Collectors.toSet()) ));
+
+
 
         assertThat(result, hasEntry((is("yandex")), contains(employees.get(2).getPerson())));
         assertThat(result, hasEntry((is("mail.ru")), contains(employees.get(2).getPerson())));
