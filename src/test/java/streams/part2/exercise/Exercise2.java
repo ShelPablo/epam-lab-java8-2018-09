@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Map.*;
+import static java.util.stream.Collectors.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -77,50 +78,15 @@ class Exercise2 {
     void employersStuffList() {
         List<Employee> employees = getEmployees();
 
-/*        @Data
-        class JobPersonPair implements Map.Entry<String, Person>
-        {
-            public JobPersonPair(String employer, Person person) {
-                this.employer = employer;
-                this.person = person;
-            }
-
-            String employer;
-            Person person;
-            @Override
-            public String getKey() {
-                return employer;
-            }
-            @Override
-            public Person getValue() {
-                return person;
-            }
-            @Override
-            public Person setValue(Person person) {
-                return this.person = person;
-            }
-        }
-
-        Function<Employee, Stream<JobPersonPair>> getJobEmploeePairList = e->{
-                List<JobPersonPair> list = new ArrayList<>();
-                e.getJobHistory().forEach(job->list.add(new JobPersonPair(job.getEmployer(), e.getPerson())));
-                return list.stream();
-        };
-
-        Map<String, Set<Person>> result = employees.stream()
-                        .flatMap(e->getJobEmploeePairList.apply(e))
-                        .collect(Collectors.groupingBy(pair->pair.getEmployer(), Collectors.mapping(JobPersonPair::getPerson, Collectors.toSet()) ));
-*/
-
         Function<Employee, Stream<Map.Entry<String, Person>>> getJobEmploeePairList = e->{
-                Map<String, Person> list = new HashMap<>();
-                e.getJobHistory().forEach(job->list.put(job.getEmployer(), e.getPerson()));
-                return list.entrySet().stream();
+                Map<String, Person> map = new HashMap<>();
+                e.getJobHistory().forEach(job->map.put(job.getEmployer(), e.getPerson()));
+                return map.entrySet().stream();
         };
 
         Map<String, Set<Person>> result = employees.stream()
                         .flatMap(getJobEmploeePairList::apply)
-                        .collect(Collectors.groupingBy(Entry::getKey, Collectors.mapping(Entry::getValue, Collectors.toSet()) ));
+                        .collect(groupingBy(Entry::getKey, mapping(Entry::getValue, toSet()) ));
 
 
 
@@ -188,7 +154,15 @@ class Exercise2 {
     void indexByFirstEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
+        Function<Employee, Map.Entry<String, Person>> getJobEmploeePair = e->{
+            Map<String, Person> map = Collections.singletonMap(e.getJobHistory().get(0).getEmployer(), e.getPerson());
+            return map.entrySet().iterator().next();
+        };
+
+        Map<String, Set<Person>> result = employees.stream()
+                .map(getJobEmploeePair)
+                .collect(groupingBy(Entry::getKey, mapping(Entry::getValue, toSet()) ));
+
 
         assertThat(result, hasEntry(is("yandex"), contains(employees.get(2).getPerson())));
         assertThat(result, hasEntry(is("T-Systems"), containsInAnyOrder(employees.get(3).getPerson(), employees.get(5).getPerson())));
@@ -207,7 +181,29 @@ class Exercise2 {
     void greatestExperiencePerEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Person> collect = null;
+        Function<Employee, Stream<Map.Entry<String, Map.Entry<Person, Integer>>>> getJobPersonDurationTrio = e->{
+            Map<String,  Map.Entry<Person, Integer>> map = new HashMap<>();
+            e.getJobHistory().forEach(job-> {
+                int curDur = map.containsKey(job.getEmployer()) ? map.get(job.getEmployer()).getValue() : 0;
+                map.put(job.getEmployer(),
+                        Collections.singletonMap(
+                                e.getPerson(),
+                                job.getDuration()+curDur)
+                                .entrySet().iterator().next());
+            });
+            return map.entrySet().stream();
+        };
+
+        Comparator<Map.Entry<String, Map.Entry<Person, Integer>>> compareTrio = (trio1, trio2) ->
+        {
+            int result = Integer.compare(trio1.getValue().getValue(), trio2.getValue().getValue());
+            return  result==0 ? trio2.getValue().getKey().getFullName().compareTo(trio1.getValue().getKey().getFullName()) : result ;
+        };
+
+        Map<String, Person> collect = employees.stream()
+                .flatMap(getJobPersonDurationTrio)
+                .collect(groupingBy(Entry::getKey, collectingAndThen(
+                        maxBy(compareTrio), optional -> optional.get().getValue().getKey())));
 
         assertThat(collect, hasEntry("EPAM", employees.get(4).getPerson()));
         assertThat(collect, hasEntry("google", employees.get(1).getPerson()));
