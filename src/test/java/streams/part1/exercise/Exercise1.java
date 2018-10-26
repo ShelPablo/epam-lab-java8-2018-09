@@ -44,8 +44,11 @@ class Exercise1 {
     void findPersonsBeganCareerInEpam() {
         List<Employee> employees = getEmployees();
 
-        // TODO реализация, использовать Collectors.toList()
-        List<Person> startedFromEpam = null;
+        //реализация, использовать Collectors.toList()
+        List<Person> startedFromEpam = employees.stream()
+                .filter(e->e.getJobHistory().get(0).getEmployer().equals("EPAM"))
+                .map(Employee::getPerson)
+                .collect(Collectors.toList());
 
         assertThat(startedFromEpam, contains(
                 employees.get(0).getPerson(),
@@ -58,8 +61,11 @@ class Exercise1 {
     void findAllCompanies() {
         List<Employee> employees = getEmployees();
 
-        // TODO реализация, использовать Collectors.toSet()
-        Set<String> companies = null;
+        // реализация, использовать Collectors.toSet()
+        Set<String> companies = employees.stream()
+                .flatMap(e->e.getJobHistory().stream())
+                .map(JobHistoryEntry::getEmployer)
+                .collect(Collectors.toSet());
 
         assertThat(companies, containsInAnyOrder("EPAM", "google", "yandex", "mail.ru", "T-Systems"));
     }
@@ -69,7 +75,10 @@ class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        Integer minimalAge = null;
+        Integer minimalAge = employees.stream()
+                .map(Employee::getPerson)
+                .map(Person::getAge)
+                .min(Integer::compareTo).orElse(0);
 
         assertThat(minimalAge, is(21));
     }
